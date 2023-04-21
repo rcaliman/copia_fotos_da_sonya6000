@@ -38,7 +38,10 @@ def lista_arquivos_do_diretorio() -> list:
 
 
 def cria_diretorios(arquivo: str):
-    diretorio_destino = os.path.join(DIR_DESTINO, extrai_data_do_arquivo(arquivo))
+    diretorio_destino = os.path.join(
+        DIR_DESTINO,
+        extrai_data_do_arquivo(arquivo)
+    )
     if not os.path.exists(diretorio_destino):
         os.makedirs(diretorio_destino)
         os.makedirs(os.path.join(diretorio_destino, 'thumbs'))
@@ -55,8 +58,13 @@ def extrai_data_do_arquivo(arquivo: str) -> str:
 
 
 def adiciona_arquivos_no_html(arquivo: str):
-    arquivo_destino = os.path.join(DIR_DESTINO, extrai_data_do_arquivo(arquivo), 'index.html')
-    estilo = 'style="background:#d5d6ea; padding-top:20px; padding-bottom: 5px; width:720px"'
+    arquivo_destino = os.path.join(
+        DIR_DESTINO,
+        extrai_data_do_arquivo(arquivo),
+        'index.html'
+    )
+    estilo = 'style="background:#d5d6ea;padding-top:20px; \
+             padding-bottom: 5px; width:720px;font-family: Verdana, Arial, Helvetica, sans-serif;"'
     if extrai_tipo_do_arquivo(arquivo) == EXTENSAO_JPEG:
         adiciona_foto_no_html(arquivo, arquivo_destino, estilo)
     if extrai_tipo_do_arquivo(arquivo) == EXTENSAO_VIDEO:
@@ -64,7 +72,10 @@ def adiciona_arquivos_no_html(arquivo: str):
 
 
 def adiciona_video_no_html(arquivo: str, arquivo_destino: str, estilo: str):
-    path_para_video = os.path.join(extrai_tipo_do_arquivo(arquivo), extrai_nome_do_arquivo(arquivo))
+    path_para_video = os.path.join(
+        extrai_tipo_do_arquivo(arquivo),
+        extrai_nome_do_arquivo(arquivo)
+    )
     with open(arquivo_destino, 'a') as index_html:
         index_html.write(
             f'<div {estilo}>'
@@ -76,21 +87,35 @@ def adiciona_video_no_html(arquivo: str, arquivo_destino: str, estilo: str):
 
 def adiciona_foto_no_html(arquivo: str, arquivo_destino: str, estilo_fotos: str):
     with open(arquivo_destino, 'a') as index_html:
-        path_para_jpg = os.path.join(extrai_tipo_do_arquivo(arquivo), extrai_nome_do_arquivo(arquivo))
-        path_para_raw = os.path.join(EXTENSAO_RAW, extrai_nome_do_arquivo(arquivo).split('.')[0] + "." + EXTENSAO_RAW.upper())
-        path_para_thumbs = os.path.join('thumbs', extrai_nome_do_arquivo(arquivo))
+        path_para_jpg = os.path.join(
+            extrai_tipo_do_arquivo(arquivo),
+            extrai_nome_do_arquivo(arquivo)
+        )
+        path_para_raw = os.path.join(
+            EXTENSAO_RAW,
+            extrai_nome_do_arquivo(arquivo).split('.')[0] + "." + EXTENSAO_RAW.upper()
+        )
+        path_para_thumbs = os.path.join(
+            'thumbs',
+            extrai_nome_do_arquivo(arquivo)
+        )
         index_html.write(
             f'<div {estilo_fotos}>'
             f'<center><a href="{path_para_jpg}">'
             f'<img src="{path_para_thumbs}"></a>'
-            f'<p><a href="{path_para_raw}"><b>[ RAW ]</b></a></center>'
+            f'<p><a href="{path_para_raw}">'
+            f'<b>[ baixar o arquivo {EXTENSAO_RAW.upper()} se ele existir ]</b></a></center>'
             f'</div><p>'
         )
 
 
 def copia_arquivo_para_destino(arquivo: str):
-    arquivo_destino = \
-        os.path.join(DIR_DESTINO, extrai_data_do_arquivo(arquivo), extrai_tipo_do_arquivo(arquivo), extrai_nome_do_arquivo(arquivo))
+    arquivo_destino = os.path.join(
+        DIR_DESTINO,
+        extrai_data_do_arquivo(arquivo),
+        extrai_tipo_do_arquivo(arquivo),
+        extrai_nome_do_arquivo(arquivo)
+    )
     if not os.path.exists(arquivo_destino):
         print(f'Copiando {extrai_nome_do_arquivo(arquivo)} para {arquivo_destino}...')
         shutil.copyfile(arquivo, arquivo_destino)
@@ -99,8 +124,12 @@ def copia_arquivo_para_destino(arquivo: str):
 
 def redimensiona_imagem(arquivo: str):
     if extrai_tipo_do_arquivo(arquivo) == 'jpg':
-        arquivo_destino = \
-            os.path.join(DIR_DESTINO, extrai_data_do_arquivo(arquivo), 'thumbs', extrai_nome_do_arquivo(arquivo))
+        arquivo_destino = os.path.join(
+            DIR_DESTINO,
+            extrai_data_do_arquivo(arquivo),
+            'thumbs',
+            extrai_nome_do_arquivo(arquivo)
+        )
         if not os.path.exists(arquivo_destino):
             imagem = Image.open(arquivo)
             imagem.thumbnail((640, 640), Image.LANCZOS)
