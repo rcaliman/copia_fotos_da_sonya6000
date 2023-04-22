@@ -8,16 +8,46 @@ from PIL import Image
 
 # extrai o diretório de origem da linha de comando
 try:
-    DIR_ORIGEM = sys.argv[1]
+    PRIMEIRO_PARAMETRO = sys.argv[1]
 except IndexError as e:
-    print(f'\nDiretório de origem não especificado. Use:\n{sys.argv[0].split("/")[-1]} <diretorio de origem>\n')
+    print(f'\nNenhum parametro especificado.\n\n'
+          f'Para copiar os arquivos use:'
+          f'\n{sys.argv[0].split("/")[-1]} <diretorio de origem>\n\n'
+          f'Para gerar índice use:\n'
+          f'{sys.argv[0].split("/")[-1]} index\n')
     sys.exit(1)
 
+DIR_ORIGEM = PRIMEIRO_PARAMETRO
 DIR_DESTINO = '/home/arquivos/webserver'
 TIPOS_DE_ARQUIVOS = 'jpg', 'arw', 'mp4'
 EXTENSAO_RAW = 'arw'
 EXTENSAO_JPEG = 'jpg'
 EXTENSAO_VIDEO = 'mp4'
+ESTILO = 'style="background:#d5d6ea;padding-top:20px; \
+            padding-bottom: 5px; width:720px; \
+            font-family: Verdana, Arial, Helvetica, sans-serif; border: 1px solid darkgray;"'
+
+
+def cria_indice_de_diretorios():
+    dir_destino = os.listdir(DIR_DESTINO)
+    arquivo_indice = os.path.join(DIR_DESTINO, 'index.html')
+    if os.path.exists(arquivo_indice):
+        os.remove(arquivo_indice)
+    with open(arquivo_indice, 'a') as novo_arquivo_indice:
+        for item in sorted(dir_destino, reverse=True):
+            if os.path.isdir(os.path.join(DIR_DESTINO, item)):
+                arquivo_info = os.path.join(DIR_DESTINO, item, 'info.txt')
+                if os.path.exists(arquivo_info):
+                    with open(arquivo_info, 'r') as info:
+                        texto_do_arquivo_info = f'{info.readline()}'
+                else:
+                    with open(arquivo_info, 'w') as info:
+                        info.write('')
+                    texto_do_arquivo_info = 'preencher no arquivo info.txt e rodar o script novamente'
+                html_arquivo_indice = \
+                    f'<a style="font-family: Verdana, Arial, Helvetica, sans-serif;"' \
+                    f'href={item}>{item} - {texto_do_arquivo_info}</a><br>'
+                novo_arquivo_indice.write(html_arquivo_indice)
 
 
 def extrai_tipo_do_arquivo(arquivo: str) -> str:
@@ -63,29 +93,28 @@ def adiciona_arquivos_no_html(arquivo: str):
         extrai_data_do_arquivo(arquivo),
         'index.html'
     )
-    estilo = 'style="background:#d5d6ea;padding-top:20px; \
-             padding-bottom: 5px; width:720px;font-family: Verdana, Arial, Helvetica, sans-serif;"'
+
     if extrai_tipo_do_arquivo(arquivo) == EXTENSAO_JPEG:
-        adiciona_foto_no_html(arquivo, arquivo_destino, estilo)
+        adiciona_foto_no_html(arquivo, arquivo_destino)
     if extrai_tipo_do_arquivo(arquivo) == EXTENSAO_VIDEO:
-        adiciona_video_no_html(arquivo, arquivo_destino, estilo)
+        adiciona_video_no_html(arquivo, arquivo_destino)
 
 
-def adiciona_video_no_html(arquivo: str, arquivo_destino: str, estilo: str):
+def adiciona_video_no_html(arquivo: str, arquivo_destino: str):
     path_para_video = os.path.join(
         extrai_tipo_do_arquivo(arquivo),
         extrai_nome_do_arquivo(arquivo)
     )
     with open(arquivo_destino, 'a') as index_html:
         index_html.write(
-            f'<div {estilo}>'
+            f'<div {ESTILO}>'
             f'<center><a href="{path_para_video}">'
             f'<b>[ {extrai_nome_do_arquivo(arquivo)} ]</b></a></center>'
             f'</div><p>'
         )
 
 
-def adiciona_foto_no_html(arquivo: str, arquivo_destino: str, estilo_fotos: str):
+def adiciona_foto_no_html(arquivo: str, arquivo_destino: str):
     with open(arquivo_destino, 'a') as index_html:
         path_para_jpg = os.path.join(
             extrai_tipo_do_arquivo(arquivo),
@@ -100,7 +129,7 @@ def adiciona_foto_no_html(arquivo: str, arquivo_destino: str, estilo_fotos: str)
             extrai_nome_do_arquivo(arquivo)
         )
         index_html.write(
-            f'<div {estilo_fotos}>'
+            f'<div {ESTILO}>'
             f'<center><a href="{path_para_jpg}">'
             f'<img src="{path_para_thumbs}"></a>'
             f'<p><a href="{path_para_raw}">'
@@ -138,7 +167,11 @@ def redimensiona_imagem(arquivo: str):
 
 if __name__ == '__main__':
     print('Em execução...')
-    for i in lista_arquivos_do_diretorio():
-        cria_diretorios(i)
-        copia_arquivo_para_destino(i)
-        redimensiona_imagem(i)
+    if PRIMEIRO_PARAMETRO == 'index':
+        cria_indice_de_diretorios()
+    else:
+        for i in lista_arquivos_do_diretorio():
+            cria_diretorios(i)
+            copia_arquivo_para_destino(i)
+            redimensiona_imagem(i)
+        cria_indice_de_diretorios()
