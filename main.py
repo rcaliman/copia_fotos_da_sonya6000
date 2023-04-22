@@ -27,6 +27,14 @@ ESTILO = 'style="background:#d5d6ea;padding-top:20px; \
             padding-bottom: 5px; width:720px; \
             font-family: Verdana, Arial, Helvetica, sans-serif; border: 1px solid darkgray;"'
 
+TOPO_HTML = '''<html>
+                    <head>
+                        <title>FOTOS</title>
+                        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+                    </head>
+                    <body>
+            '''
+RODAPE_HTML = '''</body></html>'''
 
 def cria_indice_de_diretorios():
     dir_destino = os.listdir(DIR_DESTINO)
@@ -34,6 +42,7 @@ def cria_indice_de_diretorios():
     if os.path.exists(arquivo_indice):
         os.remove(arquivo_indice)
     with open(arquivo_indice, 'a') as novo_arquivo_indice:
+        novo_arquivo_indice.write(TOPO_HTML)
         for item in sorted(dir_destino, reverse=True):
             if os.path.isdir(os.path.join(DIR_DESTINO, item)):
                 arquivo_info = os.path.join(DIR_DESTINO, item, 'info.txt')
@@ -48,6 +57,7 @@ def cria_indice_de_diretorios():
                     f'<a style="font-family: Verdana, Arial, Helvetica, sans-serif;"' \
                     f'href={item}>{item} - {texto_do_arquivo_info}</a><br>'
                 novo_arquivo_indice.write(html_arquivo_indice)
+        novo_arquivo_indice.write(RODAPE_HTML)
 
 
 def extrai_tipo_do_arquivo(arquivo: str) -> str:
