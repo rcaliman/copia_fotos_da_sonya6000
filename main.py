@@ -14,7 +14,7 @@ except IndexError as e:
           f'Para copiar os arquivos use:'
           f'\n{sys.argv[0].split("/")[-1]} <diretorio de origem>\n\n'
           f'Para gerar índice use:\n'
-          f'{sys.argv[0].split("/")[-1]} index\n')
+          f'{sys.argv[0].split("/")[-1]} geraindex\n')
     sys.exit(1)
 
 DIR_ORIGEM = PRIMEIRO_PARAMETRO
@@ -31,16 +31,38 @@ TOPO_HTML = '''<html>
                     <head>
                         <title>FOTOS</title>
                         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+                        <link rel="stylesheet"
+                            href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+                            integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+                            crossorigin="anonymous">
+                        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+                            integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+                            crossorigin="anonymous">
+                        </script>
+                        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"
+                            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+                            crossorigin="anonymous">
+                        </script>
+                        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
+                            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+                            crossorigin="anonymous">
+                        </script>
                     </head>
                     <body>
+                        <div class="container mt-3">
             '''
-RODAPE_HTML = '''</body></html>'''
+RODAPE_HTML = '''</div></body></html>'''
 
-def cria_indice_de_diretorios():
+
+def indice_de_diretorios():
     dir_destino = os.listdir(DIR_DESTINO)
     arquivo_indice = os.path.join(DIR_DESTINO, 'index.html')
     if os.path.exists(arquivo_indice):
         os.remove(arquivo_indice)
+    cria_indice_de_diretorios(arquivo_indice, dir_destino)
+
+
+def cria_indice_de_diretorios(arquivo_indice, dir_destino):
     with open(arquivo_indice, 'a') as novo_arquivo_indice:
         novo_arquivo_indice.write(TOPO_HTML)
         for item in sorted(dir_destino, reverse=True):
@@ -55,7 +77,8 @@ def cria_indice_de_diretorios():
                     texto_do_arquivo_info = 'preencher no arquivo info.txt e rodar o script novamente'
                 html_arquivo_indice = \
                     f'<a style="font-family: Verdana, Arial, Helvetica, sans-serif;"' \
-                    f'href={item}>{item} - {texto_do_arquivo_info}</a><br>'
+                    f'href={item}><li>{item} - {texto_do_arquivo_info}' \
+                    f'</li></a><br>'
                 novo_arquivo_indice.write(html_arquivo_indice)
         novo_arquivo_indice.write(RODAPE_HTML)
 
@@ -77,13 +100,15 @@ def lista_arquivos_do_diretorio() -> list:
     return lista_de_arquivos
 
 
-def cria_diretorios(arquivo: str):
+def cria_diretorios_e_index(arquivo: str):
     diretorio_destino = os.path.join(
         DIR_DESTINO,
         extrai_data_do_arquivo(arquivo)
     )
     if not os.path.exists(diretorio_destino):
         os.makedirs(diretorio_destino)
+        with open(os.path.join(diretorio_destino, 'index.html'), 'w') as index_html:
+            index_html.write(TOPO_HTML)
         os.makedirs(os.path.join(diretorio_destino, 'thumbs'))
         for tipo in TIPOS_DE_ARQUIVOS:
             os.makedirs(os.path.join(diretorio_destino, tipo))
@@ -117,10 +142,10 @@ def adiciona_video_no_html(arquivo: str, arquivo_destino: str):
     )
     with open(arquivo_destino, 'a') as index_html:
         index_html.write(
-            f'<div {ESTILO}>'
+            f'<center><div {ESTILO}>'
             f'<center><a href="{path_para_video}">'
-            f'<b>[ {extrai_nome_do_arquivo(arquivo)} ]</b></a></center>'
-            f'</div><p>'
+            f'<b>{extrai_nome_do_arquivo(arquivo)}</b></a></center>'
+            f'</div></center><p>'
         )
 
 
@@ -139,12 +164,12 @@ def adiciona_foto_no_html(arquivo: str, arquivo_destino: str):
             extrai_nome_do_arquivo(arquivo)
         )
         index_html.write(
-            f'<div {ESTILO}>'
+            f'<center><div {ESTILO}>'
             f'<center><a href="{path_para_jpg}">'
-            f'<img src="{path_para_thumbs}"></a>'
-            f'<p><a href="{path_para_raw}">'
-            f'<b>[ baixar o arquivo {EXTENSAO_RAW.upper()} se ele existir ]</b></a></center>'
-            f'</div><p>'
+            f'<img src="{path_para_thumbs}"></a><p>'
+            f'<a href="{path_para_raw}">'
+            f'<b>baixar o arquivo {EXTENSAO_RAW.upper()} se ele existir</b></a></center>'
+            f'</div></center><p>'
         )
 
 
@@ -177,11 +202,11 @@ def redimensiona_imagem(arquivo: str):
 
 if __name__ == '__main__':
     print('Em execução...')
-    if PRIMEIRO_PARAMETRO == 'index':
-        cria_indice_de_diretorios()
+    if PRIMEIRO_PARAMETRO == 'geraindex':
+        indice_de_diretorios()
     else:
         for i in lista_arquivos_do_diretorio():
-            cria_diretorios(i)
+            cria_diretorios_e_index(i)
             copia_arquivo_para_destino(i)
             redimensiona_imagem(i)
-        cria_indice_de_diretorios()
+        indice_de_diretorios()
